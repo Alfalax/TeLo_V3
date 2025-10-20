@@ -1,0 +1,99 @@
+Plan Estratégico de Analítica para la Plataforma TeLo: De la Visión Retrospectiva a la Previsión Estratégica
+Sección 1: Panorama Estratégico de la Analítica de la Plataforma
+1.1. Introducción: El Modelo Operativo Basado en Datos para TeLo
+El módulo de "Reportes y Analytics" no debe ser concebido como una mera herramienta de visualización de datos históricos, sino como el sistema nervioso central de la plataforma TeLo. En un modelo de negocio de marketplace, donde la eficiencia en la conexión entre oferta y demanda es el principal generador de valor, los datos no son un subproducto de la operación; son el activo más valioso. La capacidad de capturar, analizar y actuar sobre estos datos determinará la ventaja competitiva y la sostenibilidad a largo plazo de TeLo.   
+
+Este documento presenta un plan para evolucionar las capacidades analíticas de la plataforma a través de una curva de madurez bien definida, transformando la toma de decisiones de un proceso reactivo a uno proactivo y, finalmente, prescriptivo. El viaje se estructura en cuatro etapas fundamentales:
+
+Analítica Descriptiva (¿Qué ha pasado?): Establecer una base sólida de indicadores clave de rendimiento (KPIs) que proporcionen una visión clara y en tiempo real del estado de la plataforma. Esta es la base de la visibilidad operativa.
+
+Analítica de Diagnóstico (¿Por qué ha pasado?): Profundizar en los datos para entender las causas raíz de las tendencias y anomalías observadas. Por ejemplo, no solo saber que la tasa de conversión ha bajado, sino identificar si se debe a una falta de asesores en una región específica o a precios poco competitivos.
+
+Analítica Predictiva (¿Qué pasará?): Utilizar modelos de machine learning para pronosticar tendencias futuras, como el volumen de solicitudes, la probabilidad de abandono de un asesor o la demanda de repuestos específicos. Esto permite anticipar desafíos y oportunidades.
+
+Analítica Prescriptiva (¿Qué debemos hacer?): Sintetizar los hallazgos de las etapas anteriores para generar recomendaciones automatizadas o semiautomatizadas que optimicen los resultados del negocio. Esto incluye la optimización dinámica de los algoritmos de asignación y evaluación de ofertas.
+
+Este plan está diseñado para ser implementado de manera pragmática, aprovechando las capacidades del stack tecnológico propuesto, con un enfoque particular en Python y su robusto ecosistema de librerías de ciencia de datos como Pandas, scikit-learn, statsmodels y GeoPandas.   
+
+1.2. Alineación de la Analítica con los Objetivos Centrales del Negocio
+La implementación de este marco analítico no es un ejercicio técnico aislado; está intrínsecamente ligada a la consecución de los objetivos estratégicos fundamentales de TeLo, derivados del entendimiento del negocio. Cada indicador, modelo y dashboard propuesto está diseñado para impactar directamente en una o más de las siguientes áreas críticas:   
+
+Eficiencia Operativa: El núcleo del modelo de TeLo es la rapidez y eficacia con la que se conecta una necesidad del cliente con una solución del proveedor. La analítica debe medir y optimizar cada etapa del embudo de conversión, desde la recepción de la solicitud hasta la aceptación de la oferta. El objetivo es minimizar métricas como el "Tiempo hasta la Primera Oferta" (TTFO) y maximizar la "Tasa de Llenado de Solicitudes" (Request Fill Rate), reduciendo el número de solicitudes que se cierran sin ofertas.   
+
+Salud y Liquidez del Marketplace: Un marketplace saludable requiere un equilibrio dinámico entre la oferta (asesores) y la demanda (solicitudes). La analítica debe proporcionar una visión clara de esta balanza, identificando desajustes geográficos, de especialización o de capacidad. Métricas como la "Densidad de Ofertas" y el "Ratio Oferta/Demanda" son vitales para asegurar que cada solicitud tenga una alta probabilidad de recibir múltiples ofertas competitivas.
+
+Compromiso y Retención de Asesores: Los asesores son el motor productivo de la plataforma. Su éxito y permanencia son cruciales. La analítica debe ir más allá de las calificaciones administrativas estáticas para entender el comportamiento, el rendimiento y el nivel de satisfacción de los asesores. El objetivo es identificar a los asesores de alto rendimiento para potenciarlos, y a aquellos en riesgo de abandono para intervenir proactivamente.
+
+Crecimiento y Escalabilidad del Negocio: Para cumplir con las proyecciones de crecimiento de 500 a 1000 solicitudes diarias y soportar hasta 4000 asesores concurrentes, la plataforma debe basar sus decisiones de expansión en datos sólidos. La analítica de demanda por tipo de repuesto y geografía informará las estrategias de adquisición de nuevos asesores, mientras que los pronósticos de carga validarán que la infraestructura definida en la arquitectura sea suficiente para el futuro.   
+
+Sección 2: Indicadores Clave de Rendimiento de la Plataforma (El "Presente")
+Esta sección establece el conjunto de métricas fundacionales necesarias para monitorizar la salud y el rendimiento de la plataforma en tiempo real e históricamente. Estos indicadores formarán la base de los dashboards operativos y estratégicos, proporcionando una "fuente única de la verdad" para toda la organización.
+
+2.1. El Dashboard del Embudo Operativo
+Objetivo: Visualizar y medir la eficiencia del flujo de proceso central del negocio, desde la creación de una solicitud hasta su resolución final, tal como se describe en la sección 3 del documento de entendimiento. Este dashboard es el electrocardiograma de la operación diaria.   
+
+Fuentes de Datos Clave: Principalmente las tablas SOLICITUDES (para estados y timestamps) y OFERTAS (para tiempos de respuesta).   
+
+Indicadores Propuestos:
+
+Tasa de Entrada de Solicitudes (Request Inflow Rate): Número de nuevas solicitudes creadas por hora, día y semana. Permite identificar patrones de demanda y horas pico.
+
+Tasas de Conversión del Embudo: Un análisis detallado de la progresión de las solicitudes a través de sus estados clave.   
+
+ABIERTA → EN_EVALUACION: Porcentaje de solicitudes que reciben al menos una oferta. Mide la capacidad inicial de la plataforma para generar interés de los asesores.
+
+EN_EVALUACION → ADJUDICADA: Porcentaje de solicitudes con ofertas que resultan en la selección de un ganador. Mide la eficacia del algoritmo de evaluación.
+
+ADJUDICADA → ACEPTADA: Porcentaje de ofertas ganadoras que son aceptadas por el cliente. Mide la competitividad final de la oferta presentada.
+
+Tasa de Conversión General: Calculada como (Total de Solicitudes ACEPTADA / Total de Solicitudes Creadas). Esta es una versión más granular y completa del KPI ya definido para el dashboard de administrador.   
+
+Métricas de Velocidad:
+
+Tiempo hasta la Primera Oferta (TTFO): Mediana del tiempo transcurrido desde solicitudes.fecha_creacion hasta la creación de la primera oferta asociada. Es un indicador crítico de la reactividad de la red de asesores.
+
+Tiempo hasta la Adjudicación (TTA): Mediana del tiempo desde la creación de la solicitud hasta que su estado cambia a ADJUDICADA. Mide la velocidad de todo el ciclo de oferta y evaluación.
+
+Tiempo hasta la Decisión del Cliente (TTCD): Mediana del tiempo desde que la oferta ganadora se presenta al cliente (evento que debe registrarse) hasta que el cliente responde (ACEPTADA o RECHAZADA).
+
+Métricas de Fallo del Proceso:
+
+Tasa de Llenado de Solicitudes (Request Fill Rate): 100% - Tasa de CERRADA_SIN_OFERTAS. Es el porcentaje de solicitudes que reciben al menos una oferta. Un valor bajo es una señal de alarma sobre la liquidez del marketplace.
+
+Tasa de Escalamiento: Porcentaje de solicitudes que necesitan escalar más allá del Nivel 1. Un valor alto indica que el primer anillo de asesores (teóricamente los más adecuados) no es suficiente o no está respondiendo, lo que introduce demoras en el proceso.   
+
+Tasa de Fallo por Nivel: Porcentaje de solicitudes que no reciben ofertas en un nivel específico (1, 2, 3, 4 o 5), forzando el escalamiento al siguiente. Permite diagnosticar problemas en segmentos específicos de la red de asesores.
+
+2.2. El Dashboard de Salud del Marketplace
+Objetivo: Medir el equilibrio, la liquidez y la competitividad del ecosistema de TeLo. Un marketplace saludable no solo procesa transacciones, sino que fomenta un entorno competitivo y participativo tanto para clientes como para asesores.
+
+Fuentes de Datos Clave: SOLICITUDES, ASESORES, OFERTAS.   
+
+Indicadores Propuestos:
+
+Ratio Oferta/Demanda: Calculado como (Número de Asesores Activos / Número de Solicitudes Diarias). Ofrece una visión de alto nivel de la capacidad de la oferta para satisfacer la demanda.
+
+Densidad de Ofertas: Número promedio de ofertas recibidas por cada solicitud que fue llenada (es decir, que recibió al menos una oferta). Una alta densidad sugiere un entorno competitivo que beneficia al cliente final.
+
+Tasa de Participación de Asesores (Advisor Engagement Rate): Porcentaje de asesores habilitados que han enviado al menos una oferta en un período determinado (ej. últimos 7 días). Mide qué tan activa es la base de proveedores.
+
+Tasa de Adjudicación (Win Rate) del Asesor Promedio: Para un asesor típico, ¿qué porcentaje de las ofertas que envía resultan ADJUDICADA? Un valor muy bajo a nivel de plataforma puede ser desmotivador para la red de asesores.
+
+Tasa de Aceptación del Cliente: Del total de ofertas ADJUDICADA, ¿qué porcentaje son finalmente ACEPTADA por el cliente? Una tasa baja en este punto, incluso después de que el algoritmo ha seleccionado la "mejor" opción, puede indicar que las ofertas ganadoras todavía no son lo suficientemente atractivas para el mercado o que el cliente perdió interés debido al tiempo de espera.
+
+2.3. El Dashboard Financiero
+Objetivo: Rastrear el flujo de valor económico a través de la plataforma, proporcionando una visión clara del volumen de negocio que se está gestionando.
+
+Fuentes de Datos Clave: OFERTAS, OFERTAS_DETALLE, SOLICITUDES.   
+
+Indicadores Propuestos:
+
+Valor Bruto Ofertado (Gross Offer Value - GOV): Suma monetaria del valor total de todas las ofertas enviadas en la plataforma. Representa el valor potencial total de la oferta disponible. Se calcula sumando (precio_unitario * cantidad) para todos los ítems en OFERTAS_DETALLE.
+
+Valor Bruto Adjudicado (Gross Adjudicated Value - GAV_adj): Suma monetaria del valor de todas las ofertas que han sido seleccionadas como ADJUDICADA. Representa el valor que la plataforma ha seleccionado como óptimo.
+
+Valor Bruto Aceptado (Gross Accepted Value - GAV_acc): Suma monetaria del valor de todas las ofertas que han sido ACEPTADA por los clientes. Este es el indicador financiero más importante de la plataforma, ya que representa el volumen de negocio que TeLo ha facilitado con éxito. Es una evolución directa del KPI "Monto total aceptado por clientes".   
+
+Valor Promedio de Oferta Aceptada: GAV_acc / Número de solicitudes ACEPTADA. Permite entender el "ticket promedio" de las transacciones exitosas.
+
+Tasa de Fuga de Valor (Value Leakage Rate): Calculada como ((GAV_adj - GAV_acc) / GAV_adj). Este KPI es crucial, ya que mide el porcentaje de valor que, habiendo sido identificado como "ganador" por el sistema, es finalmente rechazado por el cliente. Una tasa alta es una señal de que el algoritmo de evaluación podría no estar perfectamente alineado con las preferencias reales del cliente.
