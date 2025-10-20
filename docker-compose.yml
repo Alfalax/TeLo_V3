@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # Base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: telo_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: telo_root_2024
+      MYSQL_DATABASE: telo_v3
+      MYSQL_USER: telo_user
+      MYSQL_PASSWORD: telo_pass_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - telo_network
+    restart: unless-stopped
+
+  # Microservicio Core TeLo
+  core-telo:
+    build:
+      context: ./services/core-telo
+      dockerfile: Dockerfile
+    container_name: telo_core
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=telo_v3
+      - DB_USER=telo_user
+      - DB_PASSWORD=telo_pass_2024
+      - JWT_SECRET=telo_jwt_secret_2024
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mysql
+    networks:
+      - telo_network
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+  # Microservicio Agente IA
+  agente-ia:
+    build:
+      context: ./services/agente-ia
+      dockerfile: Dockerfile
+    container_name: telo_agente_ia
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CORE_TELO_URL=http://core-telo:3002
+    ports:
+      - "3001:3001"
+    depends_on:
+      - core-telo
+    networks:
+      - telo_network
+    restart: unless-stopped
+    volumes:
+      - ./whatsapp_sessions:/app/.wwebjs_auth
+      - ./logs:/app/logs
+
+  # Interfaz Web Asesor
+  asesor-web:
+    build:
+      context: ./services/asesor-web
+      dockerfile: Dockerfile
+    container_name: telo_asesor_web
+    ports:
+      - "80:80"
+    depends_on:
+      - core-telo
+    networks:
+      - telo_network
+    restart: unless-stopped
+
+  # Nginx como proxy reverso (opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: telo_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - core-telo
+      - agente-ia
+      - asesor-web
+    networks:
+      - telo_network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  telo_network:
+    driver: bridge
