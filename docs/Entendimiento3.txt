@@ -1,0 +1,452 @@
+ENTENDIMIENTO DEL PROCESO TELO - VERSIÓN 2.0
+=============================================
+
+ÍNDICE
+======
+1. DESCRIPCIÓN GENERAL
+2. ARQUITECTURA DEL SISTEMA
+3. FLUJO DEL PROCESO
+4. INTERFACES A DESARROLLAR
+5. REGLAS DE NEGOCIO
+6. ESPECIFICACIONES TÉCNICAS
+7. BASE DE DATOS
+8. APIS Y ENDPOINTS
+9. DEFINICIÓN DE NIVELES
+10. FÓRMULAS DE EVALUACIÓN
+
+===============================================
+
+1. DESCRIPCIÓN GENERAL
+======================
+
+TeLo es una plataforma de gestión de solicitudes de repuestos automotrices que actúa como intermediario entre clientes y asesores/proveedores, optimizando el proceso de cotización mediante un sistema de escalamiento inteligente por niveles.
+
+OBJETIVO: Conectar eficientemente la demanda de repuestos automotrices con la oferta disponible, garantizando respuestas rápidas y competitivas.
+
+===============================================
+
+2. ARQUITECTURA DEL SISTEMA
+===========================
+
+2.1 AGENTE IA DENTRO DE TELO
+----------------------------------------------
+FUNCIONES:
+- Recibe mensajes de WhatsApp del cliente
+- Ordena, enriquece y estructura la información
+- Prepara y envía respuestas al cliente vía WhatsApp
+- Comunica aceptación/rechazo de ofertas a TeLo
+- Gestiona registro de nuevos asesores
+- Maneja PQR (Peticiones, Quejas y Reclamos)
+
+2.2 TELO (Plataforma Central)
+-----------------------------
+FUNCIONES:
+- Recibe solicitudes del Agente IA
+- Define niveles de asesores (1-5) según algoritmo dinámico
+- Distribuye solicitudes a bandejas de asesores
+- Evalúa ofertas mediante sistema de puntaje
+- Selecciona ganador automáticamente
+- Actualiza estados de solicitudes en tiempo real
+- Entrega contacto del cliente al asesor ganador
+- Gestiona notificaciones push a asesores
+
+===============================================
+
+3. FLUJO DEL PROCESO
+====================
+
+3.1 INICIO DE SOLICITUD
+-----------------------
+1. Cliente envía solicitud por WhatsApp (texto, audio, Excel)
+2. Agente IA procesa y estructura la información
+3. Agente IA envía solicitud a TeLo vía API
+
+3.2 INFORMACIÓN REQUERIDA
+-------------------------
+DATOS DEL REPUESTO:
+- Nombre del repuesto (puede ser listado múltiple en CSV)
+- Código del repuesto (opcional)
+- Línea de vehículo
+- Año modelo del vehículo
+- Marca del vehículo
+
+DATOS DEL CLIENTE:
+- Nombre completo
+- Departamento
+- Ciudad
+- Dirección
+
+
+3.3 ESCALAMIENTO POR NIVELES
+----------------------------
+CRITERIOS DE CLASIFICACIÓN:
+- Cercanía geográfica (ciudad del punto de venta vs ciudad del cliente)
+- Tiempo promedio de respuesta histórico
+- Nivel de inventario (calificación administrativa 1-5)
+- Nivel de confianza (calificación administrativa 1-5)
+
+PROCESO:
+1. Solicitud inicia en Nivel 1
+2. Espera 30 minutos por ofertas
+3. Si no hay ofertas, escala al siguiente nivel
+4. Máximo 5 niveles de escalamiento
+5. Si no hay ofertas en ningún nivel, se cierra y notifica al cliente
+
+3.4 PROCESO DE OFERTAS
+----------------------
+1. Solicitud llega a bandejas de asesores del nivel correspondiente
+2. Asesores reciben notificación push en escritorio
+3. Asesores ingresan oferta por cada repuesto:
+   - Precio unitario
+   - Garantía (en meses)
+   - Tiempo de entrega estimado (para todo el pedido)
+4. TeLo evalúa ofertas automáticamente
+5. Selecciona ganador según algoritmo de puntaje
+
+3.5 COMUNICACIÓN DE RESULTADOS
+------------------------------
+1. TeLo envía oferta ganadora al Agente IA
+2. Agente IA presenta oferta al cliente vía WhatsApp
+3. Cliente responde aceptación/rechazo
+4. Si acepta: TeLo entrega contacto al asesor ganador
+5. Si rechaza: TeLo cierra solicitud
+
+3.6 CIERRE
+----------
+1. Asesor ganador contacta directamente al cliente (Si el cliente manifiesta que nadie se comunico con el, el agente IA entregara los datos de contacto del asesor al cliente)
+2. Se realiza negociación y cierre de venta
+3. TeLo actualiza estados en todas las bandejas
+4. Se registra resultado para métricas históricas
+
+===============================================
+
+4. INTERFACES A DESARROLLAR
+===========================
+
+4.1 INTERFAZ ADMINISTRATIVO
+---------------------------
+
+DASHBOARD PRINCIPAL:
+- 4 KPIs superiores:
+  * Ofertas totales asignadas (mes actual)
+  * Monto total aceptado por clientes (mes actual)
+  * Solicitudes abiertas actualmente
+  * Tasa de conversión (solicitudes vs aceptadas)
+
+- Gráfico de líneas (mes actual):
+  * Solicitudes por día
+  * Solicitudes aceptadas por día
+  * Solicitudes cerradas sin ofertas por día
+
+- Top 15 solicitudes abiertas con mayor tiempo en proceso
+
+SIDEBAR - MÓDULOS:
+* INICIO: Dashboard principal
+* ASESORES: Gestión de asesores y puntos de venta
+* REPORTES Y ANALYTICS: Análisis avanzado con Python
+* PQR: Atención de quejas y reclamos
+* CONFIGURACIÓN: Roles, permisos y parámetros del sistema (cambiar los pesos y calificaciones en cada una de las categorias que definen los niveles)
+
+MÓDULO ASESORES:
+- 3 KPIs superiores:
+  * Total asesores habilitados
+  * Total puntos de venta
+  * Cobertura nacional (ciudades con asesores / total ciudades Colombia)
+
+- Tabla de asesores con:
+  * Nombre completo
+  * Teléfono
+  * Correo (opcional)
+  * Nombre punto de venta
+  * Ciudad y departamento
+  * Estado (Habilitado/Inhabilitado/Pendiente aprobación)
+  * Calificación inventario (1-5)
+  * Calificación confianza (1-5)
+  * Acciones: Editar/Habilitar/Inhabilitar/Aprobar
+
+- Funciones superiores:
+  * Importar asesores desde Excel
+  * Exportar listado asesores
+  * Crear nuevo asesor
+
+4.2 INTERFAZ DEL ASESOR
+-----------------------
+
+DASHBOARD:
+- 4 KPIs superiores:
+  * Ofertas asignadas
+  * Monto total ofertas ganadas
+  * Solicitudes abiertas
+  * Tasa de conversión personal
+
+PESTAÑAS:
+* ABIERTAS: Solicitudes disponibles para ofertar
+* CERRADAS: Solicitudes finalizadas sin ganar
+* GANADAS: Solicitudes adjudicadas al asesor
+
+FUNCIONALIDADES:
+- Formulario de oferta por repuesto (precio, garantía)
+- Campo tiempo de entrega total del pedido
+- Exportar/importar ofertas masivas vía Excel
+- Notificaciones en tiempo real
+
+===============================================
+
+5. REGLAS DE NEGOCIO
+====================
+
+5.1 ESCALAMIENTO
+----------------
+- Niveles dinámicos recalculados por solicitud
+- Tiempo de espera por nivel: 30 minutos
+- Máximo 5 niveles de escalamiento
+- Escalamiento automático si no hay ofertas
+
+5.2 EVALUACIÓN DE OFERTAS
+-------------------------
+CRITERIOS Y PESOS:
+- Precio: 50% del puntaje total
+- Tiempo de entrega: 35% del puntaje total
+- Garantía: 15% del puntaje total
+
+ESCALAS DE CALIFICACIÓN:
+
+PRECIO:
+- Mejor precio y hasta 5% superior: 5 puntos
+- Entre 5.1% y 8% superior al mejor: 3 puntos
+- Más de 8% superior al mejor: 1 punto
+
+TIEMPO DE ENTREGA:
+- Mismo día de solicitud: 5 puntos
+- Siguiente día: 3 puntos
+- 2 o más días: 1 punto
+
+GARANTÍA:
+- Más de 3 meses: 5 puntos
+- Entre 1 y 3 meses: 3 puntos
+- Menos de 1 mes o sin garantía: 1 punto
+
+5.3 COMUNICACIÓN
+----------------
+- usa WhatsApp directamente
+- Toda comunicación cliente-sistema vía Agente IA
+- Comunicación directa asesor-cliente solo después de adjudicación
+- Notificaciones push a asesores en escritorio
+- WhatsApp backup si aplicación cerrada
+
+5.4 ESTADOS DE SOLICITUD
+------------------------
+- ABIERTA: Disponible para ofertas en nivel actual
+- EN_EVALUACION: Recibiendo/evaluando ofertas
+- ADJUDICADA: Asesor ganador seleccionado
+- ACEPTADA: Cliente aceptó oferta
+- RECHAZADA: Cliente rechazó oferta
+- CERRADA_SIN_OFERTAS: No se encontraron oferentes
+
+===============================================
+
+
+
+===============================================
+
+7. BASE DE DATOS
+================
+
+7.1 TABLAS PRINCIPALES
+----------------------
+
+USUARIOS:
+- id (PK)
+- username
+- email
+- password_hash
+- rol_id (FK)
+- estado
+- created_at, updated_at
+
+ROLES:
+- id (PK)
+- nombre
+- permisos (JSON)
+- created_at, updated_at
+
+ASESORES:
+- id (PK)
+- usuario_id (FK)
+- nombre_completo
+- telefono
+- correo
+- punto_venta_id (FK)
+- calificacion_inventario (1-5)
+- calificacion_confianza (1-5)
+- tiempo_respuesta_promedio
+- porcentaje_respuestas
+- estado (habilitado/inhabilitado/pendiente)
+- created_at, updated_at
+- tipo_suscripcion
+
+PUNTOS_VENTA:
+- id (PK)
+- nombre
+- ciudad_id (FK)
+- departamento_id (FK)
+- direccion
+- created_at, updated_at
+
+DEPARTAMENTOS:
+- id (PK)
+- nombre
+- codigo
+- departamentos_vecinos (JSON array)
+- created_at, updated_at
+
+CIUDADES:
+- id (PK)
+- nombre
+- departamento_id (FK)
+- tipo (principal/secundaria/terciaria)
+- created_at, updated_at
+
+CLIENTES:
+- id (PK)
+- nombre_completo
+- telefono
+- ciudad_id (FK)
+- departamento_id (FK)
+- direccion
+- created_at, updated_at
+
+SOLICITUDES:
+- id (PK)
+- cliente_id (FK)
+- agente_solicitud_id (único)
+- estado
+- nivel_actual
+- fecha_creacion
+- fecha_escalamiento
+- tiempo_limite_nivel
+- created_at, updated_at
+
+REPUESTOS_SOLICITUD:
+- id (PK)
+- solicitud_id (FK)
+- nombre_repuesto
+- codigo_repuesto
+- linea_vehiculo
+- año_modelo
+- marca_vehiculo
+- cantidad
+- created_at, updated_at
+
+OFERTAS:
+- id (PK)
+- solicitud_id (FK)
+- asesor_id (FK)
+- tiempo_entrega_total
+- puntaje_total
+- estado (pendiente/ganadora/perdedora)
+- created_at, updated_at
+
+OFERTAS_DETALLE:
+- id (PK)
+- oferta_id (FK)
+- repuesto_solicitud_id (FK)
+- precio_unitario
+- garantia_meses
+- created_at, updated_at
+
+PQR:
+- id (PK)
+- cliente_id (FK)
+- tipo (peticion/queja/reclamo)
+- descripcion
+- respuesta
+- estado (pendiente/respondida/cerrada)
+- created_at, updated_at
+
+
+
+
+
+
+9. DEFINICIÓN DE NIVELES
+========================
+
+ALGORITMO DE CLASIFICACIÓN:
+Puntaje_Total = (Confianza * 0.2) + (Inventario * 0.1) + (Geografia * 0.5) + (Tiempo_Respuesta * 0.2)
+
+NIVEL 1: Puntaje >= 4.5
+- Calificación confianza: 5
+- Nivel inventario: 5 (≥50% respuestas)
+- Cercanía geográfica: 5 (misma ciudad)
+- Tiempo respuesta: 5 (≤5 min promedio)
+
+NIVEL 2: Puntaje >= 4.0
+- Calificación confianza: 5
+- Nivel inventario: 4 (≥40% respuestas)
+- Cercanía geográfica: 5 (misma ciudad)
+- Tiempo respuesta: 4 (≤10 min promedio)
+
+NIVEL 3: Puntaje >= 3.5
+- Calificación confianza: 4
+- Nivel inventario: 3 (≥30% respuestas)
+- Cercanía geográfica: 4 (ciudad principal del departamento)
+- Tiempo respuesta: 3 (≤20 min promedio)
+
+NIVEL 4: Puntaje >= 3.0
+- Calificación confianza: 3
+- Nivel inventario: 3 (≥30% respuestas)
+- Cercanía geográfica: 3 (ciudad secundaria)
+- Tiempo respuesta: 2 (≤30 min promedio)
+
+NIVEL 5: Puntaje < 3.0
+- Calificación confianza: 2
+- Nivel inventario: 2 (≥20% respuestas)
+- Cercanía geográfica: 2 (ciudad terciaria)
+- Tiempo respuesta: 1 (≤45 min promedio)
+
+===============================================
+
+10. FÓRMULAS DE EVALUACIÓN
+==========================
+
+10.1 FÓRMULA PUNTAJE OFERTA
+---------------------------
+Puntaje_Final = (Puntaje_Precio * 0.5) + (Puntaje_Tiempo * 0.35) + (Puntaje_Garantia * 0.15)
+
+10.2 CÁLCULO PUNTAJE PRECIO
+---------------------------
+Mejor_Precio = MIN(todos_los_precios)
+Diferencia_Porcentual = ((Precio_Oferta - Mejor_Precio) / Mejor_Precio) * 100
+
+IF Diferencia_Porcentual <= 5% THEN Puntaje_Precio = 5
+ELSE IF Diferencia_Porcentual <= 8% THEN Puntaje_Precio = 3
+ELSE Puntaje_Precio = 1
+
+10.3 CÁLCULO PUNTAJE TIEMPO
+---------------------------
+IF Tiempo_Entrega = 0 días THEN Puntaje_Tiempo = 5
+ELSE IF Tiempo_Entrega = 1 día THEN Puntaje_Tiempo = 3
+ELSE Puntaje_Tiempo = 1
+
+10.4 CÁLCULO PUNTAJE GARANTÍA
+-----------------------------
+IF Garantia_Meses > 3 THEN Puntaje_Garantia = 5
+ELSE IF Garantia_Meses >= 1 THEN Puntaje_Garantia = 3
+ELSE Puntaje_Garantia = 1
+
+===============================================
+
+NOTAS DE IMPLEMENTACIÓN:
+- Todas las notificaciones deben ser en tiempo real
+- El sistema debe manejar concurrencia en ofertas
+- Implementar logs detallados para auditoría
+- Considerar escalabilidad horizontal
+- Backup automático de base de datos
+- Monitoreo de performance y disponibilidad
+
+===============================================
+DOCUMENTO GENERADO: $(Get-Date)
+VERSIÓN: 2.0
+AUTOR: Sistema TeLo
+===============================================
